@@ -30,6 +30,15 @@ public:
         grow = size;
         count = size;
     }
+    Array(const Array &other)
+    {
+        this->size = other.size;
+        this->grow = other.grow;
+        this->count = other.count;
+        this->arr = new T[this->size];
+        for (int i = 0; i < this->size; i++)
+            arr[i] = other.arr[i];
+    }
     ~Array(){ delete[] arr; }
 
     //---------------//
@@ -134,33 +143,30 @@ public:
         if (index < size && index >= 0)
             arr[index] = var;
     }
-    // NOT WORK \/ //
     void insertAt(int index, T var)
     {
         if (index < size && index >= 0)
         {
-            T temp1[index - 1];
-            T temp2[size - index];
-            for (int i = 0; i < size; i++)
+            if (count + 1 >= size)
+                setSize(size + grow);
+            for (int i = count; i > index; i--)
             {
-                if (i < index)
-                    temp1[i] = arr[i];
-                else if (i > index)
-                    temp2[i] = arr[i];
+                arr[i] = arr[i - 1];
             }
-            if (index == size - 1)
-            {
-                setSize(size + grow, grow);
-            }
-            for (int i = 0; i > size; i++)
-            {
-                if (i < index)  { arr[i] = temp1[i]; }
-                else if (i > index)  { arr[i] = temp2[i]; }
-                else  { arr[index] = var; }
-            }
+            arr[index] = var;
+            count++;
         }
     }
-    // NOT WORK /\ //
+    void removeAt(int index)
+    {
+        if (index < count && index >= 0)
+        {
+            for (int i = index; i < count - 1; i++)
+                arr[i] = arr[i + 1];
+            count--;
+            arr[count] = T();
+        }
+    }
     T operator[](int index) const
     {
         return getAt(index);
@@ -197,9 +203,12 @@ public:
         }
         this->count = newCount;
     }
-    void operator=(Array other)
+    Array& operator=(const Array& other)
     {
+        if (this == &other) return *this;
+
         delete[] arr;
+
         arr = new T[other.count];
         for (int i = 0; i < other.count; i++)
         {
@@ -208,6 +217,8 @@ public:
         size = other.count;
         grow = other.grow;
         count = other.count;
+
+        return *this;
     }
 
     void print() const
